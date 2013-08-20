@@ -14,6 +14,7 @@ __author__ = "Chris Amico (eyeseast@gmail.com)"
 import csv
 import urllib2
 from copy import copy
+from functools import total_ordering
 
 try:
     from cStringIO import StringIO
@@ -415,6 +416,12 @@ class Datum(object):
             return self.value == other.value
         else:
             return self.value == other
+    
+    def __lt__(self, other):
+        if type(other) == type(self):
+            return self.value < other.value
+        else:
+            return self.value < other
     
     def as_td(self):
         return u'<td style="{style}" class="datum">{value}</td>'.format(style=self.style or '', value=self)
