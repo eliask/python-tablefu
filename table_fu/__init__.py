@@ -140,17 +140,17 @@ class TableFu(object):
         if not column_name and self.options.has_key('sorted_by'):
             column_name = self.options['sorted_by'].keys()[0]
         if column_name not in self.default_columns:
-            raise ValueError("%s isn't a column in this table" % column_name)
+            raise ValueError(u"{0} isn't a column in this table".format(column_name))
         index = self.default_columns.index(column_name)
         self.table.sort(key = lambda row: row[index], reverse=reverse)
         self.options['sorted_by'] = {column_name: {'reverse': reverse}}
 
     def transform(self, column_name, func):
         if column_name not in self.default_columns:
-            raise ValueError("%s isn't a column in this table" % column_name)
+            raise ValueError(u"{0} isn't a column in this table".format(column_name))
 
         if not callable(func):
-            raise TypeError("%s isn't callable" % func)
+            raise TypeError(u"{0} isn't callable".format(func))
 
         index = self.default_columns.index(column_name)
         for row in self.table:
@@ -160,7 +160,7 @@ class TableFu(object):
 
     def values(self, column_name, unique=False):
         if column_name not in self.default_columns:
-            raise ValueError("%s isn't a column in this table" % column_name)
+            raise ValueError(u"{0} isn't a column in this table".format(column_name))
         index = self.default_columns.index(column_name)
         result = [row[index] for row in self.table]
         if unique:
@@ -169,12 +169,12 @@ class TableFu(object):
     
     def total(self, column_name):
         if column_name not in self.default_columns:
-            raise ValueError("%s isn't a column in this table" % column_name)
+            raise ValueError(u"{0} isn't a column in this table".format(column_name))
         
         try:
             values = (float(v) for v in self.values(column_name))
         except ValueError:
-            raise ValueError('Column %s contains non-numeric values' % column_name)
+            raise ValueError(u'Column {0} contains non-numeric values'.format(column_name))
         
         return sum(values)
     
@@ -252,10 +252,10 @@ class TableFu(object):
     
     # export methods
     def html(self):
-        table = '<table>\n%s\n%s\n</table>'
-        thead = '<thead>\n<tr>%s</tr>\n</thead>' % ''.join(['<th>%s</th>' % col for col in self.columns])
-        tbody = '<tbody>\n%s\n</tbody>' % '\n'.join([row.as_tr() for row in self.rows])
-        return table % (thead, tbody)
+        table = u'<table>\n{0}\n{1}\n</table>'
+        thead = u'<thead>\n<tr>{0}</tr>\n</thead>'.format(u''.join([u'<th>{0}</th>'.format(col) for col in self.columns]))
+        tbody = u'<tbody>\n{0}\n</tbody>'.format(u'\n'.join([row.as_tr() for row in self.rows]))
+        return table.format(thead, tbody)
     
     def csv(self, **kwargs):
         """
@@ -273,7 +273,7 @@ class TableFu(object):
     
     def json(self, **kwargs):
         if not has_json:
-            raise ValueError("Couldn't find a JSON library")
+            raise ValueError(u"Couldn't find a JSON library")
         return json.dumps(list(self.dict()), **kwargs)
     
     # static methods for loading data
@@ -345,7 +345,7 @@ class Row(object):
         "Get the value for a given cell, or raise KeyError if the column doesn't exist"
         datum = self.get(column_name)
         if datum is None:
-            raise KeyError("%s isn't a column in this table" % column_name)
+            raise KeyError(u"{0} isn't a column in this table".format(column_name))
         else:
             return datum
     
@@ -354,7 +354,7 @@ class Row(object):
         Set the value for a given cell
         """
         if not column_name in self.table.default_columns:
-            raise KeyError("%s isn't a column in this table" % column_name)
+            raise KeyError(u"{0} isn't a column in this table".format(column_name))
         index = self.table.default_columns.index(column_name)
         self.cells[index] = value
     
@@ -366,15 +366,16 @@ class Row(object):
         return iter(self.values())
     
     def __repr__(self):
-        return "<%s: %s>" % (self.__class__.__name__, self.__str__())
+        return u"<{0}: {1}>".format(self.__class__.__name__, self)
 
-    def __str__(self):
-        return ', '.join(str(self[column]) for column in self.table.columns)
+    def __unicode__(self):
+        return u', '.join(unicode(self[column]) for column in self.table.columns)
     
     def as_tr(self):
         cells = ''.join(d.as_td() for d in self.data)
-        return '<tr id="row%s" class="row %s">%s</tr>' % (self.row_num, odd_even(self.row_num), cells)
-        
+        return u'<tr id="row{row_num}" class="row {odd_even}">{cells}</tr>'.format(
+            row_num=self.row_num, odd_even=odd_even(self.row_num), cells=cells)
+    
     @property
     def data(self):
         return [self[col] for col in self.table.columns]
@@ -391,9 +392,9 @@ class Datum(object):
         self.table = table
 
     def __repr__(self):
-        return "<%s: %s>" % (self.column_name, self.value)
+        return u"<{0}: {1}>".format(self.column_name, self.value)
         
-    def __str__(self):
+    def __unicode__(self):
         """
         Calling str(datum) should check first for a formatted
         version of value, then fall back to the default value
@@ -406,8 +407,8 @@ class Datum(object):
             if func:
                 row = self.table[self.row_num]
                 args = [row[arg].value for arg in args]
-                return format(self.value, func, *args, **kwargs)
-        return self.value
+                return unicode(format(self.value, func, *args, **kwargs))
+        return unicode(self.value)
     
     def __eq__(self, other):
         if type(other) == type(self):
@@ -416,7 +417,7 @@ class Datum(object):
             return self.value == other
     
     def as_td(self):
-        return '<td style="%s" class="datum">%s</td>' % (self.style or '', self.__str__())
+        return u'<td style="{style}" class="datum">{value}</td>'.format(style=self.style or '', value=self)
     
     def _get_style(self):
         try:
@@ -436,10 +437,10 @@ class Header(object):
         self.table = table
     
     def __repr__(self):
-        return "<Header: %s>" % (self.name)
+        return u"<Header: {0}>".format(self.name)
         
-    def __str__(self):
-        return self.name.encode('utf-8')
+    def __unicode__(self):
+        return self.name
     
     def __eq__(self, other):
         if type(other) == type(self):
@@ -448,7 +449,7 @@ class Header(object):
             return self.name == other
     
     def as_th(self):
-        return '<th style="%s" class="header">%s</th>' % (self.style or '', self.__str__())    
+        return u'<th style="{style}" class="header">{value}</th>'.format(style=self.style or '', value=self)
     
     def _get_style(self):
         try:
@@ -460,6 +461,6 @@ class Header(object):
 
 def odd_even(num):
     if num % 2 == 0:
-        return "even"
+        return u"even"
     else:
-        return "odd"
+        return u"odd"
