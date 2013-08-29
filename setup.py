@@ -23,6 +23,5 @@ setup(
        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     install_requires=[
-        'latimes-statestyle==0.1.2',
     ],
 )

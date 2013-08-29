@@ -4,7 +4,6 @@ Inspired by James Bennett's template_utils and Django's
 template filters.
 """
 import re
-import statestyle
 
 
 def _saferound(value, decimal_places):
@@ -17,25 +16,6 @@ def _saferound(value, decimal_places):
         return ''
     format = '%%.%df' % decimal_places
     return format % f
-
-
-def ap_state(value, failure_string=None):
-    """
-    Converts a state's name, postal abbreviation or FIPS to A.P. style.
-    
-    Example usage:
-    
-        >> ap_state("California")
-        'Calif.'
-    
-    """
-    try:
-        return statestyle.get(value).ap
-    except:
-        if failure_string:
-            return failure_string
-        else:
-            return value
 
 
 def capfirst(value, failure_string='N/A'):
@@ -173,40 +153,6 @@ def ratio(value, decimal_places=0, failure_string='N/A'):
     return _saferound(f, decimal_places) + ':1'
 
 
-def stateface(value):
-    """
-    Converts a state's name, postal abbreviation or FIPS to ProPublica's stateface
-    font code.
-    
-    Example usage:
-    
-        >> stateface("California")
-        'E'
-    
-    Documentation: http://propublica.github.com/stateface/
-    """
-    try:
-        return statestyle.get(value).stateface
-    except:
-        return value
-
-
-def state_postal(value):
-    """
-    Converts a state's name, or FIPS to its postal abbreviation
-    
-    Example usage:
-    
-        >> ap_state("California")
-        'Calif.'
-    
-    """
-    try:
-        return statestyle.get(value).postal
-    except:
-        return value
-
-
 def title(value, failure_string='N/A'):
     """
     Converts a string into titlecase.
@@ -225,7 +171,6 @@ def title(value, failure_string='N/A'):
 
 
 DEFAULT_FORMATTERS = {
-    'ap_state': ap_state,
     'capfirst': capfirst,
     'dollars': dollars,
     'dollar_signs': dollar_signs,
@@ -235,8 +180,6 @@ DEFAULT_FORMATTERS = {
     'percentage': percentage,
     'percent_change': percent_change,
     'ratio': ratio,
-    'stateface': stateface,
-    'state_postal': state_postal,
     'title': title,
 }
 
